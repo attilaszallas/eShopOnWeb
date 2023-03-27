@@ -19,11 +19,13 @@ public class CatalogItemListPagedEndpoint : IEndpoint<IResult, ListPagedCatalogI
 {
     private readonly IUriComposer _uriComposer;
     private readonly IMapper _mapper;
+    private readonly IAppLogger<CatalogItemListPagedEndpoint> _logger;
 
-    public CatalogItemListPagedEndpoint(IUriComposer uriComposer, IMapper mapper)
+    public CatalogItemListPagedEndpoint(IUriComposer uriComposer, IMapper mapper, IAppLogger<CatalogItemListPagedEndpoint> logger)
     {
         _uriComposer = uriComposer;
         _mapper = mapper;
+        _logger = logger;
     }
 
     public void AddRoute(IEndpointRouteBuilder app)
@@ -39,6 +41,8 @@ public class CatalogItemListPagedEndpoint : IEndpoint<IResult, ListPagedCatalogI
 
     public async Task<IResult> HandleAsync(ListPagedCatalogItemRequest request, IRepository<CatalogItem> itemRepository)
     {
+        int _numberOfDbItemsToReturn = 0;
+
         await Task.Delay(1000);
         var response = new ListPagedCatalogItemResponse(request.CorrelationId());
 
@@ -57,7 +61,12 @@ public class CatalogItemListPagedEndpoint : IEndpoint<IResult, ListPagedCatalogI
         foreach (CatalogItemDto item in response.CatalogItems)
         {
             item.PictureUri = _uriComposer.ComposePicUri(item.PictureUri);
+            _numberOfDbItemsToReturn++;
         }
+
+        // Log the number of items returned from the database
+        Console.WriteLine($"Number of Dto items returned from the database: {_numberOfDbItemsToReturn}");
+        _logger.LogInformation($"Number of Dto items returned from the database: {_numberOfDbItemsToReturn}");
 
         if (request.PageSize > 0)
         {
@@ -67,6 +76,9 @@ public class CatalogItemListPagedEndpoint : IEndpoint<IResult, ListPagedCatalogI
         {
             response.PageCount = totalItems > 0 ? 1 : 0;
         }
+
+        // Break the CatalogItemListPagedEndpoint by adding throw new Exception("Cannot move further"); to HandleAsync method. Redeploy the Public API into app service. Check the logs in Application Insights
+        //throw new Exception("Cannot move further");
 
         return Results.Ok(response);
     }

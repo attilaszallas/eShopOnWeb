@@ -122,6 +122,16 @@ builder.Services.AddSwaggerGen(c =>
             });
 });
 
+var aiOptions = new Microsoft.ApplicationInsights.AspNetCore.Extensions.ApplicationInsightsServiceOptions();
+
+// Disables adaptive sampling.
+aiOptions.EnableAdaptiveSampling = false;
+
+// Disables QuickPulse (Live Metrics stream).
+aiOptions.EnableQuickPulseMetricStream = false;
+
+builder.Services.AddApplicationInsightsTelemetry(aiOptions);
+
 var app = builder.Build();
 
 app.Logger.LogInformation("PublicApi App created...");
