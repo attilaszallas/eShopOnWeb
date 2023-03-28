@@ -6,6 +6,7 @@
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     <DockerfileContext>..\..</DockerfileContext>
     <Nullable>enable</Nullable>
+    <ApplicationInsightsResourceId>/subscriptions/33ef08ea-1ffa-4ff9-be41-6b78c6a4bbdc/resourceGroups/PublicApi20230327171235ResourceGroup/providers/microsoft.insights/components/PublicApi20230327171235</ApplicationInsightsResourceId>
   </PropertyGroup>
 
   <ItemGroup>
