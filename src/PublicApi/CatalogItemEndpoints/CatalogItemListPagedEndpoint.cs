@@ -66,7 +66,7 @@ public class CatalogItemListPagedEndpoint : IEndpoint<IResult, ListPagedCatalogI
 
         // Log the number of items returned from the database
         Console.WriteLine($"Number of Dto items returned from the database: {_numberOfDbItemsToReturn}");
-        _logger.LogInformation($"Number of Dto items returned from the database: {_numberOfDbItemsToReturn}");
+        _logger.LogWarning($"Number of Dto items returned from the database: {_numberOfDbItemsToReturn}");
 
         if (request.PageSize > 0)
         {
