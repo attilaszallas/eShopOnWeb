@@ -185,6 +185,19 @@ app.UseSwaggerUI(c =>
 app.MapControllers();
 app.MapEndpoints();
 
+/*
+// App Failure
+app.Logger.LogInformation("Failure during startup");
+try
+{
+    throw new Exception("Cannot move further");
+}
+catch(Exception ex)
+{
+    app.Logger.LogWarning($"App Failure during startup. Inner exception: {ex}");
+}
+*/
+
 app.Logger.LogInformation("LAUNCHING PublicApi");
 app.Run();
 

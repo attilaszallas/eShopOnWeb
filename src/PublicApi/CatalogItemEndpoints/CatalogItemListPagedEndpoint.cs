@@ -29,7 +29,7 @@ public class CatalogItemListPagedEndpoint : IEndpoint<IResult, ListPagedCatalogI
     }
 
     public void AddRoute(IEndpointRouteBuilder app)
-    {
+    {        
         app.MapGet("api/catalog-items",
             async (int? pageSize, int? pageIndex, int? catalogBrandId, int? catalogTypeId, IRepository<CatalogItem> itemRepository) =>
             {
@@ -44,6 +44,18 @@ public class CatalogItemListPagedEndpoint : IEndpoint<IResult, ListPagedCatalogI
         int _numberOfDbItemsToReturn = 0;
 
         await Task.Delay(1000);
+        /*
+        try
+        {
+            throw new Exception("Cannot move further");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning($"Failure in CatalogItemListPagedEndpoint. Inner exception: {ex}");
+            throw;
+        }
+
+        */
         var response = new ListPagedCatalogItemResponse(request.CorrelationId());
 
         var filterSpec = new CatalogFilterSpecification(request.CatalogBrandId, request.CatalogTypeId);

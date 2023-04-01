@@ -6,6 +6,10 @@
       "type": "appInsights.azure",
       "connectionId": "APPLICATIONINSIGHTS_CONNECTION_STRING",
       "dynamicId": null
+    },
+    "apis1": {
+      "ignored": "True",
+      "type": "apis"
     }
   }
 }
