@@ -67,7 +67,7 @@ public class OrderService : IOrderService
         }).ToList();
 
         var order = new Order(basket.BuyerId, shippingAddress, items);
-        await PostOrder(order, FunctionAppRequestUri);
+        // await PostOrder(order, FunctionAppRequestUri);
         await _orderRepository.AddAsync(order);
     }
 
