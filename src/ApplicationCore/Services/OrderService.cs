@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -67,13 +68,16 @@ public class OrderService : IOrderService
         }).ToList();
 
         var order = new Order(basket.BuyerId, shippingAddress, items);
-        // await PostOrder(order, FunctionAppRequestUri);
+
+        OrderSummary orderSummary = new OrderSummary(order.OrderDate, order.ShipToAddress, order.OrderItems, order.Total());
+        await PostJson(orderSummary, FunctionAppRequestUri);
+
         await _orderRepository.AddAsync(order);
     }
 
-    public async Task<string> PostOrder(Order order, string requestUri)
+    public async Task<string> PostJson(object json, string requestUri)
     {
-        string orderInJson = JsonConvert.SerializeObject(order);
+        string orderInJson = JsonConvert.SerializeObject(json);
         HttpClient httpclient = new HttpClient();
         HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Post, requestUri);
         httpRequestMessage.Content = new StringContent(orderInJson);
