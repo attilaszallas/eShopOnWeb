@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text;
 using System.Threading.Tasks;
 using Ardalis.GuardClauses;
+using Microsoft.Azure.ServiceBus;
 using Microsoft.eShopWeb.ApplicationCore.Entities;
 using Microsoft.eShopWeb.ApplicationCore.Entities.BasketAggregate;
 using Microsoft.eShopWeb.ApplicationCore.Entities.OrderAggregate;
@@ -72,7 +75,27 @@ public class OrderService : IOrderService
         OrderSummary orderSummary = new OrderSummary(order.OrderDate, order.ShipToAddress, order.OrderItems, order.Total());
         await PostJson(orderSummary, FunctionAppRequestUri);
 
+        await PostJsonViaServiceBus(orderSummary);
         await _orderRepository.AddAsync(order);
+    }
+
+    public async Task PostJsonViaServiceBus(OrderSummary orderSummary)
+    {
+        const string ServiceBusConnectionString = "Endpoint=sb://szallaseshoponweb.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=a9jgV7gFejOS6Q+85ToUFz6mU5nzxGBDe+ASbEzDVAA=";
+        const string QueueName = "OrderItemReserverBus";
+        IQueueClient queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
+
+        if (orderSummary.OrderItems == null)
+        {
+            throw new Exception($"{nameof(orderSummary.OrderItems)} is null here.");
+        }
+
+        var json = OrderSummaryReduce(orderSummary.OrderItems);
+        string orderInJson = JsonConvert.SerializeObject(json);
+        var message = new Message(Encoding.UTF8.GetBytes(orderInJson));
+
+        await queueClient.SendAsync(message);
+        await queueClient.CloseAsync();
     }
 
     public async Task<string> PostJson(object json, string requestUri)
@@ -86,4 +109,35 @@ public class OrderService : IOrderService
         var responseResults = httpResponseMessage.Content.ReadFromJsonAsync<dynamic>().ToString();
         return !string.IsNullOrEmpty(responseResults) ? responseResults : "Function App call failed!";
     }
+
+    private IReadOnlyCollection<ReducedOrderSummary> OrderSummaryReduce(IReadOnlyCollection<OrderItem> orderItems)
+    {
+        if (orderItems == null)
+        {
+            throw new Exception($"{nameof(orderItems)} is null.");
+        }
+
+        Collection < ReducedOrderSummary > reducedOrderSummaryCollection = new Collection<ReducedOrderSummary>();
+
+        int orderCount = orderItems.Count;
+
+        ReducedOrderSummary reducedOrderSummary;
+        for (int i = 0; i < orderCount; i++)
+        {
+            reducedOrderSummary = new ReducedOrderSummary();
+
+            reducedOrderSummary.ItemId = orderItems.ElementAt(i).ItemOrdered.CatalogItemId;
+            reducedOrderSummary.Quantity = orderItems.ElementAt(i).Units;
+
+            reducedOrderSummaryCollection.Add(reducedOrderSummary);
+        }
+
+        return reducedOrderSummaryCollection;
+    }
+}
+
+public class ReducedOrderSummary
+{ 
+    public int ItemId { get; set; }
+    public int Quantity { get; set; }
 }
