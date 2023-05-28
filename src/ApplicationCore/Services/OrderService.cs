@@ -35,7 +35,7 @@ public class OrderService : IOrderService
             }
             else
             {
-                return "";
+                return "https://orderitemreserver.azurewebsites.net";
             }
         }
     }
@@ -73,7 +73,7 @@ public class OrderService : IOrderService
         var order = new Order(basket.BuyerId, shippingAddress, items);
 
         OrderSummary orderSummary = new OrderSummary(order.OrderDate, order.ShipToAddress, order.OrderItems, order.Total());
-        await PostJson(orderSummary, FunctionAppRequestUri);
+        // await PostJson(orderSummary, FunctionAppRequestUri);
 
         await PostJsonViaServiceBus(orderSummary);
         await _orderRepository.AddAsync(order);
@@ -81,8 +81,11 @@ public class OrderService : IOrderService
 
     public async Task PostJsonViaServiceBus(OrderSummary orderSummary)
     {
-        const string ServiceBusConnectionString = "Endpoint=sb://szallaseshoponweb.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=a9jgV7gFejOS6Q+85ToUFz6mU5nzxGBDe+ASbEzDVAA=";
         const string QueueName = "OrderItemReserverBus";
+
+        // Service Bus Namespace / Shared access policies / RootManageSharedAccessKey -> Primary Connection String
+        const string ServiceBusConnectionString = "Endpoint=sb://szallaseshoponweb.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=hGeGiEIgtjWwnEehUgAK3s47oZjdFvXPR+ASbP6h/yg=";
+        
         IQueueClient queueClient = new QueueClient(ServiceBusConnectionString, QueueName);
 
         if (orderSummary.OrderItems == null)
