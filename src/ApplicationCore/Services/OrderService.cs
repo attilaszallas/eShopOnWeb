@@ -35,7 +35,7 @@ public class OrderService : IOrderService
             }
             else
             {
-                return "https://orderitemreserver.azurewebsites.net";
+                return "https://deliveryorderprocessor.azurewebsites.net/api/ReserveToCosmosDb";
             }
         }
     }
@@ -73,7 +73,7 @@ public class OrderService : IOrderService
         var order = new Order(basket.BuyerId, shippingAddress, items);
 
         OrderSummary orderSummary = new OrderSummary(order.OrderDate, order.ShipToAddress, order.OrderItems, order.Total());
-        // await PostJson(orderSummary, FunctionAppRequestUri);
+        await PostJson(orderSummary, FunctionAppRequestUri);
 
         await PostJsonViaServiceBus(orderSummary);
         await _orderRepository.AddAsync(order);
